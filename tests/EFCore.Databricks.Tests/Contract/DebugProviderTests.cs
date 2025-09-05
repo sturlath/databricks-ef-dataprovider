@@ -57,7 +57,34 @@ namespace EFCore.Databricks.Tests.Contract
         {
             using var ctx = new SimpleTestContext();
             
-            // Try the simplest possible query
+            // Try the simplest possible query first
+            var entityType = ctx.Model.FindEntityType(typeof(SimpleEntity));
+            Assert.NotNull(entityType);
+            
+            var relationalModel = ctx.Model.GetRelationalModel();
+            var tables = relationalModel.Tables;
+            var tableCount = tables.Count();
+            Assert.True(tableCount > 0, $"No tables found in relational model. Count: {tableCount}");
+            
+            // Check table mappings for the entity
+            var tableMappings = entityType.GetTableMappings();
+            var mappingCount = tableMappings.Count();
+            
+            if (mappingCount == 0)
+            {
+                // This is our problem! The entity is not mapped to any table
+                // Let's see what we can find out about the entity
+                var tableName = entityType.GetTableName();
+                var schema = entityType.GetSchema();
+                
+                Assert.Fail($"Entity {entityType.Name} has no table mappings. TableName: {tableName}, Schema: {schema}, Tables in model: {string.Join(", ", tables.Select(t => t.Name))}");
+            }
+            
+            // If we get here, we have table mappings
+            var entityTable = tableMappings.First().Table;
+            Assert.NotNull(entityTable);
+            
+            // Now try the query that's failing
             var query = ctx.Entities.Select(e => e.Name);
             var sql = query.ToQueryString();
             
