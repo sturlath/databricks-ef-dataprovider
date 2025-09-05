@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace EFCore.Databricks.Infrastructure
 {
@@ -28,7 +29,7 @@ namespace EFCore.Databricks.Infrastructure
 
         public void ApplyServices(IServiceCollection services)
         {
-            new EntityFrameworkRelationalServicesBuilder(services).TryAddCoreServices();
+            new EntityFrameworkServicesBuilder(services).TryAddCoreServices();
 
             services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
             services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
