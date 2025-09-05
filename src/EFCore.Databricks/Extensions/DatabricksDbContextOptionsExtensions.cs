@@ -31,7 +31,6 @@ namespace Microsoft.EntityFrameworkCore
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             optionsBuilder.ConfigureWarnings(w => w.Default(WarningBehavior.Throw));
-            optionsBuilder.UseSqlite("Data Source=:memory:"); // TODO: replace with Databricks-specific provider
             optionsBuilder.ReplaceService<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
             optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             return optionsBuilder;
