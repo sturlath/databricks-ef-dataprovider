@@ -6,7 +6,8 @@ namespace Microsoft.EntityFrameworkCore
     /// <summary>
     /// Provides type mappings for Databricks SQL.
     /// </summary>
-    public sealed class DatabricksTypeMappingSource : RelationalTypeMappingSource
+    public sealed class DatabricksTypeMappingSource(TypeMappingSourceDependencies dependencies, RelationalTypeMappingSourceDependencies relational) 
+        : RelationalTypeMappingSource(dependencies, relational)
     {
         private static readonly BoolTypeMapping _bool = new("BOOLEAN");
         private static readonly IntTypeMapping _int = new("INTEGER");
@@ -19,11 +20,6 @@ namespace Microsoft.EntityFrameworkCore
         private static readonly DateTimeOffsetTypeMapping _dateTimeOffset = new("TIMESTAMP");
         private static readonly GuidTypeMapping _guid = new("STRING");
 
-        public DatabricksTypeMappingSource(TypeMappingSourceDependencies dependencies, RelationalTypeMappingSourceDependencies relational)
-            : base(dependencies, relational)
-        {
-        }
-
         protected override RelationalTypeMapping? FindMapping(in RelationalTypeMappingInfo mappingInfo)
         {
             var clrType = mappingInfo.ClrType;
@@ -31,18 +27,21 @@ namespace Microsoft.EntityFrameworkCore
             {
                 clrType = Nullable.GetUnderlyingType(clrType)!;
             }
-            if (clrType == typeof(string)) return _string;
-            if (clrType == typeof(int)) return _int;
-            if (clrType == typeof(long)) return _long;
-            if (clrType == typeof(bool)) return _bool;
-            if (clrType == typeof(double) || clrType == typeof(float)) return _double;
-            if (clrType == typeof(decimal)) return _decimal;
-            if (clrType == typeof(DateTime)) return _dateTime;
-            if (clrType == typeof(DateTimeOffset)) return _dateTimeOffset;
-            if (clrType == typeof(Guid)) return _guid;
-            if (clrType == typeof(byte[])) return _binary;
 
-            return base.FindMapping(mappingInfo);
+            return clrType switch
+            {
+                var t when t == typeof(string) => _string,
+                var t when t == typeof(int) => _int,
+                var t when t == typeof(long) => _long,
+                var t when t == typeof(bool) => _bool,
+                var t when t == typeof(double) || t == typeof(float) => _double,
+                var t when t == typeof(decimal) => _decimal,
+                var t when t == typeof(DateTime) => _dateTime,
+                var t when t == typeof(DateTimeOffset) => _dateTimeOffset,
+                var t when t == typeof(Guid) => _guid,
+                var t when t == typeof(byte[]) => _binary,
+                _ => base.FindMapping(mappingInfo)
+            };
         }
     }
 }

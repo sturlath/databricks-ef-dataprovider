@@ -1,66 +1,84 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace EFCore.Databricks.Infrastructure
 {
     /// <summary>
     /// EF Core options extension holding Databricks specific settings.
     /// </summary>
-    public sealed class DatabricksOptionsExtension : IDbContextOptionsExtension
+    public sealed class DatabricksOptionsExtension : RelationalOptionsExtension
     {
         private DbContextOptionsExtensionInfo? _info;
 
-        public string? ConnectionString { get; private set; }
+        public override string? ConnectionString { get; }
 
         public DatabricksOptionsExtension()
         {
         }
 
-        public DatabricksOptionsExtension WithConnectionString(string connectionString)
+        public DatabricksOptionsExtension(string connectionString)
         {
-            DatabricksOptionsExtension clone = (DatabricksOptionsExtension)MemberwiseClone();
-            clone.ConnectionString = connectionString;
-            return clone;
+            ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
-        public void ApplyServices(IServiceCollection services)
+        public override RelationalOptionsExtension WithConnectionString(string? connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentException("Connection string cannot be null or whitespace.", nameof(connectionString));
+            }
+            return new DatabricksOptionsExtension(connectionString);
+        }
+
+        public override void ApplyServices(IServiceCollection services)
         {
             new EntityFrameworkRelationalServicesBuilder(services).TryAddCoreServices();
 
-            services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
+            // Register the Databricks-specific logging definitions
+            services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
+
+            // Removed: services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
             services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
             services.AddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
+            services.AddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
             services.AddScoped<IRelationalConnection, DatabricksRelationalConnection>();
             services.AddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
             services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
             services.AddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
+            
+            // Add missing relational services
+            services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
 
         }
 
-        public void Validate(IDbContextOptions options)
+        public override void Validate(IDbContextOptions options)
         {
+            // Connection string is guaranteed to be non-null due to constructor validation
             if (string.IsNullOrWhiteSpace(ConnectionString))
             {
                 throw new InvalidOperationException("A valid connection string must be provided.");
             }
         }
 
-        public DbContextOptionsExtensionInfo Info => _info ??= new ExtensionInfo(this);
+        public override DbContextOptionsExtensionInfo Info => _info ??= new ExtensionInfo(this);
 
-        private sealed class ExtensionInfo : DbContextOptionsExtensionInfo
+        protected override RelationalOptionsExtension Clone()
         {
-            private readonly DatabricksOptionsExtension _extension;
+            return new DatabricksOptionsExtension(ConnectionString ?? throw new InvalidOperationException("ConnectionString cannot be null during clone."));
+        }
 
-            public ExtensionInfo(DatabricksOptionsExtension extension) : base(extension)
-            {
-                _extension = extension;
-            }
+        private sealed class ExtensionInfo(DatabricksOptionsExtension extension) : DbContextOptionsExtensionInfo(extension)
+        {
+            private readonly DatabricksOptionsExtension _extension = extension;
 
             public override bool IsDatabaseProvider => true;
-            public override string LogFragment => $"Databricks " + (string.IsNullOrEmpty(_extension.ConnectionString) ? string.Empty : "ConnectionString");
+            public override string LogFragment => $"Databricks {(string.IsNullOrEmpty(_extension.ConnectionString) ? string.Empty : "ConnectionString")}";
             public override int GetServiceProviderHashCode() => _extension.ConnectionString?.GetHashCode() ?? 0;
             public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
                 => other is ExtensionInfo otherInfo && _extension.ConnectionString == otherInfo._extension.ConnectionString;

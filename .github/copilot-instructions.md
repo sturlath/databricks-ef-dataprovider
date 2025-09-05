@@ -1,13 +1,58 @@
+# Copilot Instructions for Databricks EF Core Provider
+
+## Repository Overview
+This repository contains an Entity Framework Core relational provider (EFCore.Databricks) for read-only LINQ queries against Databricks SQL via the Simba ODBC driver (System.Data.Odbc). 
+
+## Technology Stack
+- **.NET 9**: This project targets .NET 9 with forward compatibility for .NET 9 for the latest performance and language features
+- **Entity Framework Core 9**: Using the latest EF Core 9.0.8 for modern data access patterns and performance improvements
+- **ODBC**: Uses System.Data.Odbc for Databricks connectivity via Simba driver
+- **xUnit**: For unit testing with FakeItEasy for mocking
+
+## Project Structure
+- `src/EFCore.Databricks/`: Main provider implementation
+- `tests/EFCore.Databricks.Tests/`: Unit tests using contract-based testing
+- `specs/001-efcore-databricks-read/`: Detailed specifications and plans
+
+## Key Components
+- **DatabricksOptionsExtension**: Inherits from RelationalOptionsExtension for proper EF Core integration
+- **DatabricksLoggingDefinitions**: Concrete implementation of RelationalLoggingDefinitions
+- **Service Registration**: Proper DI setup for EF Core relational services
+
+## Scope & Constraints
+- **READ-ONLY**: No SaveChanges, DDL, or migrations support
+- **Query Types**: SELECT with projection, WHERE, ORDER BY, GROUP BY, aggregates, INNER JOIN, LIMIT
+- **Connection**: ODBC via Simba Spark ODBC Driver
+- **Environment**: Databricks SQL Warehouses
+
+## Development Guidelines
+- Follow EF Core provider patterns and conventions
+- Maintain test-first development approach
+- Keep changes minimal and focused
+- Use .NET 9 features where beneficial for performance or code clarity
+- Ensure all dependency injection is properly configured for EF Core
+
+## Testing Strategy
+Tests are organized by contract/feature:
+- QuickstartScenarioTests: Basic configuration scenarios
+- SelectProjectionTests: Basic SELECT queries
+- SelectWhereTests: WHERE clause translation
+- SelectOrderByLimitTests: ORDER BY and LIMIT support
+- SelectGroupByAggregateTests: GROUP BY with aggregates
+- InnerJoinTests: INNER JOIN translation
+
+Current test status: Tests pass dependency injection and reach EF Core query translation phase.
+=======
 # Databricks Entity Framework Core Data Provider
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
-This is a .NET 8 C# library project that provides an Entity Framework Core data provider for read-only LINQ queries against Databricks SQL via the Simba ODBC driver. The project is currently in early development (v0.1.0) with a test-driven approach where tests exist before implementation.
+This is a .NET 9 C# library project that provides an Entity Framework Core data provider for read-only LINQ queries against Databricks SQL via the Simba ODBC driver. The project is currently in early development (v0.1.0) with a test-driven approach where tests exist before implementation.
 
 ## Working Effectively
 
 ### Bootstrap and Build
-- **Prerequisites**: .NET 8 SDK is required. Verify with `dotnet --version` (should show 8.0.x).
+- **Prerequisites**: .NET 9 SDK is required. Verify with `dotnet --version` (should show 8.0.x).
 - **Initial setup**:
   - `dotnet restore EFCore.Databricks.sln` -- takes ~20 seconds. NEVER CANCEL. Set timeout to 60+ seconds.
   - `dotnet build EFCore.Databricks.sln --no-restore -c Release` -- takes ~8 seconds. NEVER CANCEL. Set timeout to 30+ seconds.
@@ -36,8 +81,8 @@ This is a .NET 8 C# library project that provides an Entity Framework Core data 
 - `src/EFCore.Databricks/Infrastructure/DatabricksRelationalConnection.cs` - ODBC connection wrapper
 
 ### Dependencies and Package Management
-- **Core dependencies**: Microsoft.EntityFrameworkCore.Relational 8.0.8, System.Data.Odbc 8.0.0
-- **Test dependencies**: xunit 2.5.3, FakeItEasy 8.3.0, Microsoft.NET.Test.Sdk 17.8.0
+- **Core dependencies**: Microsoft.EntityFrameworkCore.Relational 9.0.8, System.Data.Odbc 9.0.0
+- **Test dependencies**: xunit 2.5.3, FakeItEasy 9.3.0, Microsoft.NET.Test.Sdk 17.8.0
 - **Always run `dotnet restore` before building after any package changes**
 
 ## Validation

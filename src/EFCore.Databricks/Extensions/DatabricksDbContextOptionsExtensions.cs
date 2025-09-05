@@ -26,7 +26,7 @@ namespace Microsoft.EntityFrameworkCore
 
             var extension = optionsBuilder.Options.FindExtension<DatabricksOptionsExtension>()
                 ?? new DatabricksOptionsExtension();
-            extension = extension.WithConnectionString(resolved);
+            extension = (DatabricksOptionsExtension)extension.WithConnectionString(resolved);
 
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
