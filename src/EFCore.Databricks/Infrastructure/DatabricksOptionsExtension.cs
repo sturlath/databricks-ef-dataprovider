@@ -40,23 +40,21 @@ namespace EFCore.Databricks.Infrastructure
 
         public override void ApplyServices(IServiceCollection services)
         {
-            new EntityFrameworkRelationalServicesBuilder(services).TryAddCoreServices();
+            // Use the standard pattern for EF Core relational providers
+            new EntityFrameworkRelationalServicesBuilder(services)
+                .TryAddCoreServices()
+                .TryAddProviderSpecificServices(map => {
+                    // Only register truly provider-specific services here that don't conflict with core EF services
+                });
 
-            // Register the Databricks-specific logging definitions
+            // Register core EF services with provider-specific implementations
             services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
-
-            // Only register essential Databricks-specific services, let core services handle the rest
             services.TryAddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
-            services.TryAddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
             services.TryAddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
             services.TryAddScoped<IRelationalConnection, DatabricksRelationalConnection>();
             services.TryAddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
             services.TryAddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
-            
-            // Modification commands (for read-only provider)
             services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
-
-            // Add database creator (even for read-only, EF Core expects this)
             services.TryAddScoped<IRelationalDatabaseCreator, DatabricksDatabaseCreator>();
 
         }
