@@ -1,5 +1,5 @@
 using System;
-using Microsoft.EntityFrameworkCore;
+using EFCore.Databricks.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 

@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.EntityFrameworkCore
+namespace EFCore.Databricks.Infrastructure
 {
     /// <summary>
     /// EF Core options extension holding Databricks specific settings.
@@ -22,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore
 
         public DatabricksOptionsExtension WithConnectionString(string connectionString)
         {
-            var clone = (DatabricksOptionsExtension)MemberwiseClone();
+            DatabricksOptionsExtension clone = (DatabricksOptionsExtension)MemberwiseClone();
             clone.ConnectionString = connectionString;
             return clone;
         }
@@ -39,12 +38,6 @@ namespace Microsoft.EntityFrameworkCore
             services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
             services.AddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
 
-            var initializerInterface = Type.GetType("Microsoft.EntityFrameworkCore.Internal.ISingletonOptionsInitializer, Microsoft.EntityFrameworkCore");
-            var initializerImplementation = Type.GetType("Microsoft.EntityFrameworkCore.Internal.SingletonOptionsInitializer, Microsoft.EntityFrameworkCore");
-            if (initializerInterface != null && initializerImplementation != null)
-            {
-                services.AddSingleton(initializerInterface, initializerImplementation);
-            }
         }
 
         public void Validate(IDbContextOptions options)

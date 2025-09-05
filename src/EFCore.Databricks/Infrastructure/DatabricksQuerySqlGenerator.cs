@@ -1,8 +1,7 @@
-using System;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace Microsoft.EntityFrameworkCore
+namespace EFCore.Databricks.Infrastructure
 {
     /// <summary>
     /// Generates Databricks compatible SQL queries.
@@ -18,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore
         {
             if (selectExpression.Offset != null)
             {
-                throw new NotSupportedException("Not implemented for now (read-only provider)");
+                throw new NotSupportedException("OFFSET clause is not supported by the Databricks provider");
             }
 
             if (selectExpression.Limit != null)

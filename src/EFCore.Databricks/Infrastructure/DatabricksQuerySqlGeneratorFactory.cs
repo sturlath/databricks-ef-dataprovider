@@ -1,3 +1,4 @@
+using EFCore.Databricks.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 
 namespace Microsoft.EntityFrameworkCore

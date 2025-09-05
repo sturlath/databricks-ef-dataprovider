@@ -14,3 +14,4 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+/.vs
