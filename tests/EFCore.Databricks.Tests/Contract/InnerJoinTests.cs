@@ -10,8 +10,25 @@ namespace EFCore.Databricks.Tests.Contract
         {
             public DbSet<Customer> Customers => Set<Customer>();
             public DbSet<Order> Orders => Set<Order>();
+            
             protected override void OnConfiguring(DbContextOptionsBuilder options)
                 => options.UseDatabricks("Data Source=:memory:");
+                
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                // Configure entities with explicit primary keys and table names
+                modelBuilder.Entity<Customer>(entity =>
+                {
+                    entity.HasKey(c => c.Id);
+                    entity.ToTable("Customers");
+                });
+                
+                modelBuilder.Entity<Order>(entity =>
+                {
+                    entity.HasKey(o => o.Id);
+                    entity.ToTable("Orders");
+                });
+            }
         }
 
         private record Customer(int Id, string Name);

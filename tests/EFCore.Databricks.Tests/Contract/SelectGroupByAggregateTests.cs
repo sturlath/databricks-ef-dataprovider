@@ -11,6 +11,15 @@ namespace EFCore.Databricks.Tests.Contract
             public DbSet<Order> Orders => Set<Order>();
             protected override void OnConfiguring(DbContextOptionsBuilder options)
                 => options.UseDatabricks("Data Source=:memory:");
+                
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                modelBuilder.Entity<Order>(entity =>
+                {
+                    entity.HasKey(o => o.Id);
+                    entity.ToTable("Orders");
+                });
+            }
         }
 
         private record Order(int Id, int CustomerId);
