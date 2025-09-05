@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -29,11 +30,15 @@ namespace EFCore.Databricks.Infrastructure
 
         public void ApplyServices(IServiceCollection services)
         {
-            new EntityFrameworkServicesBuilder(services).TryAddCoreServices();
+            new EntityFrameworkRelationalServicesBuilder(services).TryAddCoreServices();
+
+            // Register the Databricks-specific logging definitions
+            services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
 
             services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
             services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
             services.AddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
+            services.AddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
             services.AddScoped<IRelationalConnection, DatabricksRelationalConnection>();
             services.AddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
             services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
