@@ -39,7 +39,7 @@ namespace EFCore.Databricks.Infrastructure
             // Register the Databricks-specific logging definitions
             services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
 
-            services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
+            // Removed: services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
             services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
             services.AddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
             services.AddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
