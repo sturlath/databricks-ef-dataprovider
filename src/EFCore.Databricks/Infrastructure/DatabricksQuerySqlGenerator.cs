@@ -6,13 +6,9 @@ namespace EFCore.Databricks.Infrastructure
     /// <summary>
     /// Generates Databricks compatible SQL queries.
     /// </summary>
-    public sealed class DatabricksQuerySqlGenerator : QuerySqlGenerator
+    public sealed class DatabricksQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies) 
+        : QuerySqlGenerator(dependencies)
     {
-        public DatabricksQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies)
-            : base(dependencies)
-        {
-        }
-
         protected override void GenerateLimitOffset(SelectExpression selectExpression)
         {
             if (selectExpression.Offset != null)

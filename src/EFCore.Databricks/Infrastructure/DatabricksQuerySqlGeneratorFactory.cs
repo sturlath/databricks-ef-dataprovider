@@ -6,15 +6,8 @@ namespace Microsoft.EntityFrameworkCore
     /// <summary>
     /// Creates instances of <see cref="DatabricksQuerySqlGenerator"/>.
     /// </summary>
-    public sealed class DatabricksQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
+    public sealed class DatabricksQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies) : IQuerySqlGeneratorFactory
     {
-        private readonly QuerySqlGeneratorDependencies _dependencies;
-
-        public DatabricksQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies)
-        {
-            _dependencies = dependencies;
-        }
-
-        public QuerySqlGenerator Create() => new DatabricksQuerySqlGenerator(_dependencies);
+        public QuerySqlGenerator Create() => new DatabricksQuerySqlGenerator(dependencies);
     }
 }

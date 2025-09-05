@@ -7,13 +7,9 @@ namespace Microsoft.EntityFrameworkCore
     /// <summary>
     /// Provides a relational connection for Databricks using ODBC.
     /// </summary>
-    public sealed class DatabricksRelationalConnection : RelationalConnection
+    public sealed class DatabricksRelationalConnection(RelationalConnectionDependencies dependencies) 
+        : RelationalConnection(dependencies)
     {
-        public DatabricksRelationalConnection(RelationalConnectionDependencies dependencies)
-            : base(dependencies)
-        {
-        }
-
         protected override DbConnection CreateDbConnection()
             => new OdbcConnection(ConnectionString);
     }

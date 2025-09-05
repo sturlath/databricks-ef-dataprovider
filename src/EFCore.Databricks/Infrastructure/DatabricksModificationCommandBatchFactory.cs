@@ -8,11 +8,9 @@ namespace EFCore.Databricks.Infrastructure
     /// Since Databricks is typically used for read-only operations,
     /// this provides minimal update functionality.
     /// </summary>
-    public class DatabricksModificationCommandBatchFactory : IModificationCommandBatchFactory
+    public sealed class DatabricksModificationCommandBatchFactory : IModificationCommandBatchFactory
     {
         public ModificationCommandBatch Create()
-        {
-            throw new NotSupportedException("Databricks provider does not support modification operations.");
-        }
+            => throw new NotSupportedException("Databricks provider does not support modification operations.");
     }
 }

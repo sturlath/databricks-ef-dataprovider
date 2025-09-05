@@ -73,17 +73,12 @@ namespace EFCore.Databricks.Infrastructure
             return new DatabricksOptionsExtension(ConnectionString ?? throw new InvalidOperationException("ConnectionString cannot be null during clone."));
         }
 
-        private sealed class ExtensionInfo : DbContextOptionsExtensionInfo
+        private sealed class ExtensionInfo(DatabricksOptionsExtension extension) : DbContextOptionsExtensionInfo(extension)
         {
-            private readonly DatabricksOptionsExtension _extension;
-
-            public ExtensionInfo(DatabricksOptionsExtension extension) : base(extension)
-            {
-                _extension = extension;
-            }
+            private readonly DatabricksOptionsExtension _extension = extension;
 
             public override bool IsDatabaseProvider => true;
-            public override string LogFragment => $"Databricks " + (string.IsNullOrEmpty(_extension.ConnectionString) ? string.Empty : "ConnectionString");
+            public override string LogFragment => $"Databricks {(string.IsNullOrEmpty(_extension.ConnectionString) ? string.Empty : "ConnectionString")}";
             public override int GetServiceProviderHashCode() => _extension.ConnectionString?.GetHashCode() ?? 0;
             public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other)
                 => other is ExtensionInfo otherInfo && _extension.ConnectionString == otherInfo._extension.ConnectionString;
