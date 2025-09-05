@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -11,24 +12,27 @@ namespace EFCore.Databricks.Infrastructure
     /// <summary>
     /// EF Core options extension holding Databricks specific settings.
     /// </summary>
-    public sealed class DatabricksOptionsExtension : IDbContextOptionsExtension
+    public sealed class DatabricksOptionsExtension : RelationalOptionsExtension
     {
         private DbContextOptionsExtensionInfo? _info;
 
-        public string? ConnectionString { get; private set; }
+        public override string? ConnectionString { get; }
 
         public DatabricksOptionsExtension()
         {
         }
 
-        public DatabricksOptionsExtension WithConnectionString(string connectionString)
+        public DatabricksOptionsExtension(string? connectionString)
         {
-            DatabricksOptionsExtension clone = (DatabricksOptionsExtension)MemberwiseClone();
-            clone.ConnectionString = connectionString;
-            return clone;
+            ConnectionString = connectionString;
         }
 
-        public void ApplyServices(IServiceCollection services)
+        public override RelationalOptionsExtension WithConnectionString(string? connectionString)
+        {
+            return new DatabricksOptionsExtension(connectionString);
+        }
+
+        public override void ApplyServices(IServiceCollection services)
         {
             new EntityFrameworkRelationalServicesBuilder(services).TryAddCoreServices();
 
@@ -43,10 +47,13 @@ namespace EFCore.Databricks.Infrastructure
             services.AddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
             services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
             services.AddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
+            
+            // Add missing relational services
+            services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
 
         }
 
-        public void Validate(IDbContextOptions options)
+        public override void Validate(IDbContextOptions options)
         {
             if (string.IsNullOrWhiteSpace(ConnectionString))
             {
@@ -54,7 +61,12 @@ namespace EFCore.Databricks.Infrastructure
             }
         }
 
-        public DbContextOptionsExtensionInfo Info => _info ??= new ExtensionInfo(this);
+        public override DbContextOptionsExtensionInfo Info => _info ??= new ExtensionInfo(this);
+
+        protected override RelationalOptionsExtension Clone()
+        {
+            return new DatabricksOptionsExtension(ConnectionString);
+        }
 
         private sealed class ExtensionInfo : DbContextOptionsExtensionInfo
         {
