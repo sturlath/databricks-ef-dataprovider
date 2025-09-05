@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    /// Generates sequential parameter names in the form <c>__p_n</c>.
+    /// Generates sequential parameter names in the form <c>__p_0</c>, <c>__p_1</c>, etc.
     /// </summary>
     public sealed class SequentialParameterNameGeneratorFactory : IParameterNameGeneratorFactory
     {
