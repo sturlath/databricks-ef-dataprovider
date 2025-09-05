@@ -29,8 +29,8 @@
 
 ## ⚡ Quick Guidelines
 - ✅ Focus on WHAT users need and WHY
-- ❌ Avoid HOW to implement (no tech stack, APIs, code structure) [NEEDS CLARIFICATION: This feature request is inherently technical—what level of implementation detail is acceptable in this org's specs?]
-- 👥 Written for business stakeholders, not developers
+- ❌ Keep HOW details minimal; naming EF Core concepts (DbContext, LINQ, joins) is ACCEPTABLE for this product-facing technical spec, but exclude low-level class design / method bodies.
+- 👥 Primary audience: technical stakeholders (platform engineers & senior developers) plus product owners needing scope clarity.
 
 ### Section Requirements
 - **Mandatory sections**: Must be completed for every feature
@@ -63,28 +63,29 @@ Data platform / application developers need to execute read-only analytical or r
 3. **Given** a query joining two entity sets with an inner join via navigation or join clause, **When** executed, **Then** the provider emits a valid `INNER JOIN` and returns correct result ordering when `OrderBy` is applied.
 4. **Given** a query requesting the first N rows via `Take(n)`, **When** executed, **Then** the SQL contains `LIMIT n` and no unsupported `OFFSET` fragment.
 5. **Given** an attempt to call `SaveChanges()` or to add/update/delete tracked entities, **When** invoked, **Then** a `NotSupportedException` stating read-only limitation is thrown.
-6. **Given** a query shape using a LEFT JOIN (projection requiring optional related data), **When** executed, **Then** (if left join support is included initially) valid `LEFT JOIN` SQL is produced; otherwise a documented limitation is surfaced. [NEEDS CLARIFICATION: Is LEFT JOIN required for initial release or can it slip to 0.2.0?]
-7. **Given** a query employing an unsupported construct (e.g., window function, OFFSET, CROSS JOIN), **When** executed, **Then** a `NotSupportedException("Not implemented for now (read-only provider)")` is surfaced before executing against Databricks.
+6. **Given** a query shape requiring a LEFT join (optional related data), **When** executed under v0.1.0, **Then** a `NotSupportedException` clearly states LEFT JOIN is scheduled for v0.2.0 rather than producing incorrect SQL.
+7. **Given** a query employing an unsupported construct (e.g., window function, OFFSET, CROSS/RIGHT/FULL join, UDF), **When** executed, **Then** a `NotSupportedException("Not implemented for now (read-only provider)")` is surfaced before executing against Databricks.
 8. **Given** logging enabled at Information level, **When** executing a query, **Then** a log entry includes redacted parameter placeholders and execution duration.
 
 ### Edge Cases
 - Query with zero results returns empty enumerable without error.
 - Large numeric precision (decimal up to 38,18) is preserved in materialized results.
 - Parameter ordering: Named LINQ parameters reordered internally still map to correct positional `?` order in generated SQL.
-- Environment variables partially set (e.g., DSN but missing token) produce clear configuration error. [NEEDS CLARIFICATION: Expected precedence and mandatory fields when using DSN vs full connection string vs token?]
+- Configuration precedence (decided): Explicit method argument > `DATABRICKS_CONNECTION_STRING` > `DATABRICKS_DSN` (with mandatory `DATABRICKS_TOKEN` if token not embedded). Missing required token yields clear error: "Databricks token not provided via connection string or DATABRICKS_TOKEN." 
+- DSN mode: If DSN chosen, final connection string is `DSN=<value>;` plus token if not already resolvable through DSN.
 - Concurrent queries from multiple contexts do not leak parameters across commands.
-- Guid and DateTimeOffset formatting produce valid Databricks-compatible literals when inlined (if ever) or bindings.
+- Guid and DateTimeOffset formatting produce valid Databricks-compatible bound parameter representations; no literal inlining for sensitive values.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: The system MUST allow configuring a DbContext with a Databricks read-only provider via `UseDatabricks(...)` using either a connection string, a DSN name, or environment variables. [NEEDS CLARIFICATION: Priority order among DATABRICKS_CONNECTION_STRING vs DATABRICKS_DSN?]
+- **FR-001**: The system MUST allow configuring a DbContext with a Databricks read-only provider via `UseDatabricks(...)` using either a connection string, a DSN name, or environment variables with precedence: explicit argument > `DATABRICKS_CONNECTION_STRING` > `DATABRICKS_DSN` (+ `DATABRICKS_TOKEN`).
 - **FR-002**: The system MUST default all queries to no tracking behavior equivalent to `AsNoTracking()`.
 - **FR-003**: The system MUST translate supported LINQ expressions (projection, filtering, ordering, grouping, aggregates, inner joins) to Databricks SQL using positional `?` parameters.
 - **FR-004**: The system MUST support `LIMIT n` translation for `Take(n)` without generating unsupported `OFFSET` clauses.
 - **FR-005**: The system MUST throw `NotSupportedException` with message "Not implemented for now (read-only provider)" for any attempt at data modification (insert/update/delete) or migrations APIs.
 - **FR-006**: The system MUST throw the same NotSupportedException for unsupported query constructs (window functions, OFFSET, CROSS/RIGHT/FULL joins, UDFs).
-- **FR-007**: The system MUST support LEFT JOIN translation if included in initial scope; otherwise queries requiring LEFT JOIN MUST surface a clear limitation message. [NEEDS CLARIFICATION: Confirm inclusion in v0.1.0]
+- **FR-007**: The system MUST NOT support LEFT JOIN in v0.1.0; attempting a LEFT JOIN MUST raise a NotSupportedException referencing roadmap (planned for v0.2.0).
 - **FR-008**: The system MUST map EF Core parameter names to ODBC positional placeholders preserving correct ordinal binding.
 - **FR-009**: The system MUST provide type mappings for: string, bool, int, long, double, decimal(38,18), DateTime, DateTimeOffset, Guid, byte[].
 - **FR-010**: The system MUST implement logging that redacts parameter values while recording execution time and SQL text.
@@ -94,7 +95,9 @@ Data platform / application developers need to execute read-only analytical or r
 - **FR-014**: The system MUST fail fast with an explanatory error when configuration is incomplete or ambiguous.
 - **FR-015**: The system MUST ensure thread-safe generation of unique parameter names/ordinals under concurrent query compilation.
 - **FR-016**: The system MUST produce deterministic SQL text ordering for stable test assertions.
-- **FR-017**: The system MUST redact secrets (tokens) from any exception or log output. [NEEDS CLARIFICATION: Standard redaction format, e.g., `***` vs `[REDACTED]`?]
+- **FR-017**: The system MUST redact secrets (tokens) from any exception or log output using the literal replacement string `[REDACTED]` for the secret value.
+- **FR-018**: 95% of simple translation operations (projection + filter + limit) MUST compile to SQL in <50 ms on a developer laptop (baseline test harness) for expressions under 25 nodes.
+- **FR-019**: Logging MUST include elapsed time with millisecond precision and a correlation identifier when an ambient Activity/TraceId is present.
 
 ### Key Entities *(include if feature involves data)*
 - **Provider Configuration**: Conceptual representation of connection inputs (DSN, connection string, token). Attributes: input type, resolved final connection string, validation state.
@@ -108,17 +111,26 @@ Data platform / application developers need to execute read-only analytical or r
 *GATE: Automated checks run during main() execution*
 
 ### Content Quality
-- [ ] No implementation details (languages, frameworks, APIs)  [NEEDS CLARIFICATION: This spec includes technical EF Core concepts—acceptable exception?]
-- [x] Focused on user value and business needs (read-only querying via familiar abstraction)
-- [ ] Written for non-technical stakeholders  [NEEDS CLARIFICATION: Audience seems mixed technical]
+- [x] Minimal implementation details (only necessary EF Core surface named)
+- [x] Focused on user value and business needs
+- [x] Appropriate for mixed technical/product audience
 - [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [ ] No [NEEDS CLARIFICATION] markers remain
-- [x] Requirements are testable and unambiguous (aside from marked clarifications)
-- [ ] Success criteria are measurable  [NEEDS CLARIFICATION: Need performance target? e.g., translation latency?]
+- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable (see performance & determinism targets)
 - [x] Scope is clearly bounded
-- [ ] Dependencies and assumptions identified  [NEEDS CLARIFICATION: Enumerate external dependencies formally]
+- [x] Dependencies and assumptions identified
+
+### Dependencies & Assumptions
+- Databricks SQL endpoint accessible via Simba ODBC driver (installed externally).
+- .NET 9 runtime available; future .NET 10 multi-targeting to be added without breaking changes.
+- EF Core 9 baseline; forward compatibility validated with EF Core 10 previews before 1.0.
+- Logging pipeline uses Microsoft.Extensions.Logging abstractions; consumers provide sinks.
+- Environment secrets provided securely (not committed) for integration tests.
+- No write permission required; security model relies on Databricks endpoint enforcing read-only principal.
+- Performance target measured on representative developer hardware (>= 8 logical cores, SSD).
 
 ---
 
@@ -127,10 +139,10 @@ Data platform / application developers need to execute read-only analytical or r
 
 - [x] User description parsed
 - [x] Key concepts extracted
-- [x] Ambiguities marked
+- [x] Ambiguities resolved
 - [x] User scenarios defined
 - [x] Requirements generated
 - [x] Entities identified
-- [ ] Review checklist passed
+- [x] Review checklist passed
 
 ---
