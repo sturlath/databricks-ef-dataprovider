@@ -22,13 +22,17 @@ namespace EFCore.Databricks.Infrastructure
         {
         }
 
-        public DatabricksOptionsExtension(string? connectionString)
+        public DatabricksOptionsExtension(string connectionString)
         {
-            ConnectionString = connectionString;
+            ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
         public override RelationalOptionsExtension WithConnectionString(string? connectionString)
         {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentException("Connection string cannot be null or whitespace.", nameof(connectionString));
+            }
             return new DatabricksOptionsExtension(connectionString);
         }
 
@@ -55,6 +59,7 @@ namespace EFCore.Databricks.Infrastructure
 
         public override void Validate(IDbContextOptions options)
         {
+            // Connection string is guaranteed to be non-null due to constructor validation
             if (string.IsNullOrWhiteSpace(ConnectionString))
             {
                 throw new InvalidOperationException("A valid connection string must be provided.");
@@ -65,7 +70,7 @@ namespace EFCore.Databricks.Infrastructure
 
         protected override RelationalOptionsExtension Clone()
         {
-            return new DatabricksOptionsExtension(ConnectionString);
+            return new DatabricksOptionsExtension(ConnectionString ?? throw new InvalidOperationException("ConnectionString cannot be null during clone."));
         }
 
         private sealed class ExtensionInfo : DbContextOptionsExtensionInfo
