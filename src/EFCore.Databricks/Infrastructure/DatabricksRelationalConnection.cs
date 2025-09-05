@@ -2,7 +2,7 @@ using System.Data.Common;
 using System.Data.Odbc;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Microsoft.EntityFrameworkCore
+namespace EFCore.Databricks.Infrastructure
 {
     /// <summary>
     /// Provides a relational connection for Databricks using ODBC.

@@ -43,7 +43,7 @@ namespace EFCore.Databricks.Infrastructure
             // Register the Databricks-specific logging definitions
             services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
 
-            // Removed: services.AddSingleton<IDbContextOptionsExtension, DatabricksOptionsExtension>();
+            // Core relational services
             services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
             services.AddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
             services.AddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
@@ -52,7 +52,7 @@ namespace EFCore.Databricks.Infrastructure
             services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
             services.AddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
             
-            // Add missing relational services
+            // Modification commands (for read-only provider)
             services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
 
         }
