@@ -42,6 +42,14 @@ namespace EFCore.Databricks.Tests.Contract
             
             var relationalModel = ctx.Model.GetRelationalModel();
             Assert.NotNull(relationalModel);
+            
+            // Debug: Let's see what tables are in the relational model
+            var tables = relationalModel.Tables;
+            var tableCount = tables.Count();
+            
+            // This should help us understand what's missing
+            // If tableCount is 0, that's our problem
+            Assert.True(tableCount > 0, $"No tables found in relational model. Count: {tableCount}");
         }
         
         [Fact]

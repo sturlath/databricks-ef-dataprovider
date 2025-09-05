@@ -55,6 +55,12 @@ namespace EFCore.Databricks.Infrastructure
             // Modification commands (for read-only provider)
             services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
 
+            // Add database creator (even for read-only, EF Core expects this)
+            services.AddScoped<IRelationalDatabaseCreator, DatabricksDatabaseCreator>();
+            
+            // Add command builder factory
+            services.TryAddSingleton<IRelationalCommandBuilderFactory, RelationalCommandBuilderFactory>();
+
         }
 
         public override void Validate(IDbContextOptions options)
