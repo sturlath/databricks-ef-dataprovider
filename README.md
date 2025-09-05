@@ -1,4 +1,8 @@
-# databricks-ef-dataprovider
+﻿# Entity Framework Dtabricks dataprovider
+
+This is a test in using AI to create the most simplified (readonly) version of a dataprovider to use with HotChocolate GraphQL.
+
+If you want to take this further just clone the repo because I have no interest of maintaining this code base 😅!
 
 An Entity Framework Core relational provider (EFCore.Databricks) for read-only LINQ queries against Databricks SQL via the Simba ODBC driver (System.Data.Odbc).
 
