@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -43,23 +45,19 @@ namespace EFCore.Databricks.Infrastructure
             // Register the Databricks-specific logging definitions
             services.TryAddSingleton<LoggingDefinitions, DatabricksLoggingDefinitions>();
 
-            // Core relational services
-            services.AddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
-            services.AddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
-            services.AddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
-            services.AddScoped<IRelationalConnection, DatabricksRelationalConnection>();
-            services.AddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
-            services.AddSingleton<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
-            services.AddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
+            // Only register essential Databricks-specific services, let core services handle the rest
+            services.TryAddSingleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>();
+            services.TryAddSingleton<ITypeMappingSource, DatabricksTypeMappingSource>();
+            services.TryAddSingleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>();
+            services.TryAddScoped<IRelationalConnection, DatabricksRelationalConnection>();
+            services.TryAddSingleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>();
+            services.TryAddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
             
             // Modification commands (for read-only provider)
             services.TryAddSingleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>();
 
             // Add database creator (even for read-only, EF Core expects this)
-            services.AddScoped<IRelationalDatabaseCreator, DatabricksDatabaseCreator>();
-            
-            // Add command builder factory
-            services.TryAddSingleton<IRelationalCommandBuilderFactory, RelationalCommandBuilderFactory>();
+            services.TryAddScoped<IRelationalDatabaseCreator, DatabricksDatabaseCreator>();
 
         }
 
