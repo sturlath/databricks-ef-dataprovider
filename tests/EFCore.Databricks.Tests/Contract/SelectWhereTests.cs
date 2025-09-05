@@ -26,8 +26,8 @@ namespace EFCore.Databricks.Tests.Contract
                 .ToQueryString();
 
             Assert.Contains("WHERE", sql.ToUpperInvariant());
-            Assert.Contains("@__id_0", sql);
-            Assert.Contains("@__name_1", sql);
+            Assert.Contains("?__id_0", sql);
+            Assert.Contains("?__name_1", sql);
         }
     }
 }

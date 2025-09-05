@@ -47,7 +47,7 @@ namespace Microsoft.EntityFrameworkCore
                 _extension = extension;
             }
 
-            public override bool IsDatabaseProvider => false;
+            public override bool IsDatabaseProvider => true;
             public override string LogFragment => "";
             public override int GetServiceProviderHashCode() => 0;
             public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;

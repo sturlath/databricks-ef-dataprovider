@@ -12,7 +12,10 @@ namespace Microsoft.EntityFrameworkCore
         {
         }
 
+        public override string GenerateParameterName(string name)
+            => name;
+
         public override string GenerateParameterNamePlaceholder(string name)
-            => "?";
+            => $"?{name}";
     }
 }

@@ -19,13 +19,21 @@ namespace EFCore.Databricks.Tests.Contract
         [Fact]
         public void Configures_via_environment_variables()
         {
+            var original = Environment.GetEnvironmentVariable("DATABRICKS_CONNECTION_STRING");
             Environment.SetEnvironmentVariable("DATABRICKS_CONNECTION_STRING", "Data Source=:memory:");
-            using var ctx = new TestContext();
+            try
+            {
+                using var ctx = new TestContext();
 
-            Assert.Equal(QueryTrackingBehavior.NoTracking, ctx.ChangeTracker.QueryTrackingBehavior);
+                Assert.Equal(QueryTrackingBehavior.NoTracking, ctx.ChangeTracker.QueryTrackingBehavior);
 
-            var sql = ctx.Customers.OrderBy(c => c.Id).Take(1).ToQueryString();
-            Assert.Contains("LIMIT", sql.ToUpperInvariant());
+                var sql = ctx.Customers.OrderBy(c => c.Id).Take(1).ToQueryString();
+                Assert.Contains("LIMIT", sql.ToUpperInvariant());
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DATABRICKS_CONNECTION_STRING", original);
+            }
         }
     }
 }
