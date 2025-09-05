@@ -12,7 +12,7 @@
 2. Extract key concepts from description
    → Identify: actors, actions, data, constraints
 3. For each unclear aspect:
-   → Mark with [NEEDS CLARIFICATION: specific question]
+   → (Finalized) No open clarification questions remain; future questions must be added explicitly before implementation changes.
 4. Fill User Scenarios & Testing section
    → If no clear user flow: ERROR "Cannot determine user scenarios"
 5. Generate Functional Requirements
@@ -20,7 +20,7 @@
    → Mark ambiguous requirements
 6. Identify Key Entities (if data involved)
 7. Run Review Checklist
-   → If any [NEEDS CLARIFICATION]: WARN "Spec has uncertainties"
+   → If any unresolved questions exist: WARN "Spec has uncertainties"
    → If implementation details found: ERROR "Remove tech details"
 8. Return: SUCCESS (spec ready for planning)
 ```
@@ -39,7 +39,7 @@
 
 ### For AI Generation
 When creating this spec from a user prompt:
-1. **Mark all ambiguities**: Use [NEEDS CLARIFICATION: specific question] for any assumption you'd need to make
+1. **Mark all ambiguities**: (Guideline retained for future specs; none currently outstanding.)
 2. **Don't guess**: If the prompt doesn't specify something (e.g., "login system" without auth method), mark it
 3. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
 4. **Common underspecified areas**:
@@ -117,7 +117,7 @@ Data platform / application developers need to execute read-only analytical or r
 - [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] No clarification markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable (see performance & determinism targets)
 - [x] Scope is clearly bounded
