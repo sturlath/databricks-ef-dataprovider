@@ -40,18 +40,22 @@ namespace EFCore.Databricks.Infrastructure
 
         public override void ApplyServices(IServiceCollection services)
         {
-            new EntityFrameworkRelationalServicesBuilder(services)
-                .TryAddCoreServices();
+            var builder = new EntityFrameworkRelationalServicesBuilder(services)
+                .TryAdd<LoggingDefinitions, DatabricksLoggingDefinitions>()
+                .TryAdd<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>()
+                .TryAdd<IRelationalTypeMappingSource, DatabricksTypeMappingSource>()
+                .TryAdd<ISqlGenerationHelper, DatabricksSqlGenerationHelper>()
+                .TryAdd<IModelValidator, RelationalModelValidator>()
+                .TryAdd<IRelationalConnection, DatabricksRelationalConnection>()
+                .TryAdd<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>()
+                .TryAdd<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>()
+                .TryAdd<IRelationalDatabaseCreator, DatabricksDatabaseCreator>()
+                .TryAdd<ISqlExpressionFactory, SqlExpressionFactory>()
+                .TryAdd<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>()
+                .TryAdd<IUpdateSqlGenerator, DatabricksUpdateSqlGenerator>()
+                .TryAdd<IProviderConventionSetBuilder, DatabricksConventionSetBuilder>();
 
-            services.Replace(ServiceDescriptor.Singleton<ISqlGenerationHelper, DatabricksSqlGenerationHelper>());
-            services.Replace(ServiceDescriptor.Singleton<IRelationalTypeMappingSource, DatabricksTypeMappingSource>());
-            services.Replace(ServiceDescriptor.Scoped<IRelationalConnection, DatabricksRelationalConnection>());
-            services.Replace(ServiceDescriptor.Singleton<IQuerySqlGeneratorFactory, DatabricksQuerySqlGeneratorFactory>());
-            services.TryAddSingleton<IDatabaseProvider, DatabaseProvider<DatabricksOptionsExtension>>();
-            services.Replace(ServiceDescriptor.Singleton<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>());
-            services.Replace(ServiceDescriptor.Scoped<IRelationalDatabaseCreator, DatabricksDatabaseCreator>());
-            services.Replace(ServiceDescriptor.Singleton<LoggingDefinitions, DatabricksLoggingDefinitions>());
-            services.Replace(ServiceDescriptor.Singleton<IModelRuntimeInitializer, RelationalModelRuntimeInitializer>());
+            builder.TryAddCoreServices();
         }
 
         public override void Validate(IDbContextOptions options)
