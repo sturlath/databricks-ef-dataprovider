@@ -35,8 +35,11 @@ namespace EFCore.Databricks.Tests.Contract
                 .ToQueryString();
 
             Assert.Contains("WHERE", sql.ToUpperInvariant());
-            Assert.Contains("?__id_0", sql);
-            Assert.Contains("?__name_1", sql);
+            // Parameter declarations are emitted as SQL comments by EF Core's ToQueryString
+            Assert.Contains("__id_0='10'", sql);
+            Assert.Contains("__name_1='foo'", sql);
+            // Ensure positional parameter placeholders are present
+            Assert.Contains("?", sql);
         }
     }
 }
