@@ -51,7 +51,9 @@ namespace EFCore.Databricks.Infrastructure
                 .TryAdd<IModificationCommandBatchFactory, DatabricksModificationCommandBatchFactory>()
                 .TryAdd<IRelationalDatabaseCreator, DatabricksDatabaseCreator>()
                 .TryAdd<ISqlExpressionFactory, SqlExpressionFactory>()
-                .TryAdd<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>();
+                .TryAdd<IParameterNameGeneratorFactory, SequentialParameterNameGeneratorFactory>()
+                .TryAdd<IUpdateSqlGenerator, DatabricksUpdateSqlGenerator>()
+                .TryAdd<IProviderConventionSetBuilder, DatabricksConventionSetBuilder>();
 
             builder.TryAddCoreServices();
         }
