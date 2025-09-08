@@ -1,5 +1,5 @@
-using System.Text;
 using Microsoft.EntityFrameworkCore.Update;
+using System.Text;
 
 namespace EFCore.Databricks.Infrastructure
 {
@@ -31,6 +31,7 @@ namespace EFCore.Databricks.Infrastructure
             int commandPosition,
             out bool requiresTransaction)
         {
+            requiresTransaction = false;
             throw new NotSupportedException("Databricks provider is read-only. Delete operations are not supported.");
         }
 
@@ -48,6 +49,7 @@ namespace EFCore.Databricks.Infrastructure
             int commandPosition,
             out bool requiresTransaction)
         {
+            requiresTransaction = false;
             throw new NotSupportedException("Databricks provider is read-only. Insert operations are not supported.");
         }
 
@@ -65,6 +67,7 @@ namespace EFCore.Databricks.Infrastructure
             int commandPosition,
             out bool requiresTransaction)
         {
+            requiresTransaction = false;
             throw new NotSupportedException("Databricks provider is read-only. Update operations are not supported.");
         }
 
@@ -74,6 +77,7 @@ namespace EFCore.Databricks.Infrastructure
             int commandPosition,
             out bool requiresTransaction)
         {
+            requiresTransaction = false;
             throw new NotSupportedException("Databricks provider is read-only. Stored procedure calls are not supported.");
         }
 
